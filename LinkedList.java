@@ -1,17 +1,26 @@
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 /**
  * Class LinkedList<E> is a doubly linked list of LinkedListNode
  * Such a node contains a reference to some object of type E.
  * @param <E>
  */
-public class LinkedList<E> implements Iterable
+public class LinkedList<E> implements Iterable<E>
 {
+   private LinkedListNode head;
+   private LinkedListNode tail;
+   private int size;
+   private long modcount;
 
    /**
     * Constructs an empty list
     */
    public LinkedList()
    {
-
+      head = null;
+      tail = null;
+      size = 0;
+      modcount = 0;
    }
 
    /**
@@ -20,10 +29,44 @@ public class LinkedList<E> implements Iterable
     * subsequent elements to the right (adds one to their indices).
     * @param index Param index is the index at which the specified element is to be inserted.
     * @param element Param element is the element that is to be inserted.
+    * @throws IndexOutOfBoundsException Throws IndexOutOfBoundException if index is out of bounds
     */
    public void add(int index, E element)
    {
+      if (index < 0 || index > size)
+      {
+         throw new IndexOutOfBoundsException("Invalid Index");
+      }
+      // Appending to the end of the list if the condition is true.
+      if (index == size)
+      {
+         addLast(element);
+      }
+      // If the condition above is false we need to insert the element at a specified position.
+      else
+      {
+         LinkedListNode currentNode = head;
+         // linear searching the list to find the node at specified index.
+         for (int i = 0; i < index; i++)
+         {
+            currentNode = currentNode.getNext();
+         }
+         // Making a new node.
+         LinkedListNode newNode = new LinkedListNode(element, currentNode.getPrevious(), currentNode);
 
+         // Updating the previous node to point to the new node.
+         if (currentNode.getNext() != null)
+         {
+            currentNode.getPrevious().setNext(newNode);
+         }
+         else
+         {
+            head = newNode;
+         }
+         // Updating the current node to point to the new node.
+         currentNode.setPrevious(newNode);
+         size++;
+      }
    }
 
    /**
@@ -33,7 +76,8 @@ public class LinkedList<E> implements Iterable
     */
    public boolean add(E element)
    {
-
+      addLast(element);
+      return true;
    }
 
    /**
@@ -41,7 +85,10 @@ public class LinkedList<E> implements Iterable
     */
    public void clear()
    {
-
+      head = null;
+      tail = null;
+      size = 0;
+      modcount ++; // TODO: do I increment modcount in clear?
    }
 
    /**
@@ -51,11 +98,23 @@ public class LinkedList<E> implements Iterable
     */
    public E get(int index)
    {
+      if (index < 0 || index >= size)
+      {
+         throw new IndexOutOfBoundsException("Index out of bounds");
+      }
+      // Reference to the head which is used to linear search through the list.
+      LinkedListNode currentNode = head;
 
+      // Linear searching through the list to find the node at specified location.
+      for (int i = 0; i < index; i++)
+      {
+         currentNode = currentNode.getNext();
+      }
+      return currentNode.getValue();
    }
 
    /**
-    * Returns the index of the first occurrance of the specified element in this list,
+    * Returns the index of the first occurrence of the specified element in this list,
     * or -1 if this list does not contain the element. More formally, returns the
     * lowest index i or -1 if there is no such index.
     * @param element element is the specified element to search for.
@@ -72,7 +131,7 @@ public class LinkedList<E> implements Iterable
     */
    public boolean isEmpty()
    {
-
+      return size == 0;
    }
 
    /**
@@ -97,7 +156,21 @@ public class LinkedList<E> implements Iterable
     */
    public E set(int index, E element)
    {
-
+      if (index > 0 || index >= size)
+      {
+         throw new IndexOutOfBoundsException("Index out of bounds");
+      }
+      LinkedListNode currentNode = head;
+      // Linear searching through the list to find the node at the specified index.
+      for (int i = 0; i < index; i++)
+      {
+         currentNode = currentNode.getNext();
+      }
+      // Storing the value to be replaced
+      E removedElement = currentNode.getValue();
+      // Updating the value of the node at the specified index with new element.
+      currentNode.setValue(element);
+      return removedElement;
    }
 
    /**
@@ -106,7 +179,7 @@ public class LinkedList<E> implements Iterable
     */
    public int size()
    {
-
+      return size;
    }
 
    /**
@@ -115,7 +188,7 @@ public class LinkedList<E> implements Iterable
     */
    public Iterator<E> iterator()
    {
-
+      return new LinkedListIterator(false);
    }
 
    /**
@@ -125,7 +198,111 @@ public class LinkedList<E> implements Iterable
     */
    public Iterator<E> reverseIterator()
    {
+      return new LinkedListIterator(true);
+   }
 
+   /**
+    * Helper method that is used for simplicity and exception handling within
+    * the add methods.
+    * @param element Element to be added first.
+    */
+   private void addFirst(E element)
+   {
+      if (isEmpty())
+      {
+         // If the list is empty, create a new node with the provided element
+         // and make it both the head and the tail of the list.
+         head = new LinkedListNode(element);
+         tail = head;
+      }
+      else
+      {
+         // If the list is not empty, create a new node with the provided element,
+         // and set its "next" reference to the current head.
+         LinkedListNode newNode = new LinkedListNode(element, null, head);
+         // Update the previous reference of the current head to point to the new node.
+         head.setPrevious(newNode);
+         // Update the head of the list to be the new node.
+         head = newNode;
+      }
+      size++;
+   }
+
+   /**
+    * Helper method that is used for simplicity and exception handling within
+    * the add methods.
+    * @param element Element to be added.
+    */
+   private void addLast(E element)
+   {
+      if (isEmpty())
+      {
+         head = new LinkedListNode(element);
+         tail = head;
+      }
+      else
+      {
+         LinkedListNode newNode = new LinkedListNode(element, tail, null);
+         tail.setNext(newNode);
+         tail = newNode;
+      }
+      size++;
+   }
+
+   /**
+    * Helper method used when removing element. Specifically the first node.
+    * @return Returning the element to be removed.
+    */
+   private E removeFirst()
+   {
+      if (head == null)
+      {
+         throw new NoSuchElementException("List is empty");
+      }
+      // Getting the value of the first element.
+      E elementRemoved = head.getValue();
+
+      if (head == tail)
+      {
+         // If theirs only one element, set both the head and tail
+         // to null making the lit empty
+         head = null;
+         tail = null;
+      }
+      // Updating the head to be the next element.
+      else
+      {
+         head = head.getNext();
+         head.setPrevious(null);
+      }
+      size--;
+      return elementRemoved;
+   }
+
+   /**
+    * Helper method used when removing element. Specifically the last node.
+    * @return Returning the element to be removed.
+    */
+   private E removeLast()
+   {
+      if (tail == null)
+      {
+         throw new NoSuchElementException("List is empty");
+      }
+      E elementRemoved = tail.getValue();
+
+      if (head == tail)
+      {
+         head = null;
+         tail = null;
+      }
+      else
+      {
+         tail = tail.getPrevious();
+         tail.setNext(null);
+      }
+      size--;
+      return elementRemoved;
    }
 
    /**
@@ -133,13 +310,16 @@ public class LinkedList<E> implements Iterable
     */
    public class LinkedListNode
    {
+      private E _value;
+      private LinkedListNode _previous;
+      private LinkedListNode _next;
 
       /**
        *
        */
       public LinkedListNode()
       {
-
+         this(null);
       }
 
       /**
@@ -148,7 +328,7 @@ public class LinkedList<E> implements Iterable
        */
       public LinkedListNode(E value)
       {
-
+         this(value, null, null);
       }
 
       /**
@@ -157,9 +337,11 @@ public class LinkedList<E> implements Iterable
        * @param prev
        * @param next
        */
-      public void LinkedlistNode(E value, LinkedListNode prev, LinkedListNode next)
+      public LinkedListNode(E value, LinkedListNode prev, LinkedListNode next)
       {
-
+         _value =  value;
+         _previous = prev;
+         _next = next;
       }
 
       /**
@@ -168,7 +350,7 @@ public class LinkedList<E> implements Iterable
        */
       public E getValue()
       {
-
+         return _value;
       }
 
       /**
@@ -177,7 +359,7 @@ public class LinkedList<E> implements Iterable
        */
       public LinkedListNode getPrevious()
       {
-
+         return _previous;
       }
 
       /**
@@ -186,7 +368,7 @@ public class LinkedList<E> implements Iterable
        */
       public LinkedListNode getNext()
       {
-
+         return _next;
       }
 
       /**
@@ -195,7 +377,7 @@ public class LinkedList<E> implements Iterable
        */
       public void setValue(E value)
       {
-
+         this._value = value;
       }
 
       /**
@@ -204,7 +386,7 @@ public class LinkedList<E> implements Iterable
        */
       public void setPrevious(LinkedListNode prev)
       {
-
+         this._previous = prev;
       }
 
       /**
@@ -213,15 +395,17 @@ public class LinkedList<E> implements Iterable
        */
       public void setNext(LinkedListNode next)
       {
-
+         this._next = next;
       }
    }
 
    /**
     *
     */
-   public class LinkedListIterator implements Iterator<E> // Do i need <E>?
+   public class LinkedListIterator implements Iterator<E>
    {
+      private LinkedListNode _cursor;
+      private boolean _reverse;
 
       /**
        *
@@ -229,7 +413,7 @@ public class LinkedList<E> implements Iterable
        */
       public LinkedListIterator(boolean reverse)
       {
-
+         this._reverse = reverse;
       }
 
       /**
