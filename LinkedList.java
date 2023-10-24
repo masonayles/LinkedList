@@ -1,5 +1,7 @@
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.ConcurrentModificationException;
+
 /**
  * Class LinkedList<E> is a doubly linked list of LinkedListNode
  * Such a node contains a reference to some object of type E.
@@ -66,6 +68,7 @@ public class LinkedList<E> implements Iterable<E>
          // Updating the current node to point to the new node.
          currentNode.setPrevious(newNode);
          size++;
+         modcount++;
       }
    }
 
@@ -77,6 +80,8 @@ public class LinkedList<E> implements Iterable<E>
    public boolean add(E element)
    {
       addLast(element);
+      modcount++;
+      size++;
       return true;
    }
 
@@ -145,6 +150,10 @@ public class LinkedList<E> implements Iterable<E>
    public E remove(int index)
    {
 
+
+      modcount++;
+      size--;
+
    }
 
    /**
@@ -183,8 +192,8 @@ public class LinkedList<E> implements Iterable<E>
    }
 
    /**
-    *
-    * @return
+    * Method that returns a new LinkedListIterator.
+    * @return Returns a new LinkedListIterator.
     */
    public Iterator<E> iterator()
    {
@@ -306,7 +315,8 @@ public class LinkedList<E> implements Iterable<E>
    }
 
    /**
-    *
+    * Class LinkedListNode is used for initializing each individual node.
+    * and assigning it a previous, next, and its value.
     */
    public class LinkedListNode
    {
@@ -315,7 +325,7 @@ public class LinkedList<E> implements Iterable<E>
       private LinkedListNode _next;
 
       /**
-       *
+       * Constructor LinkedListNode used to a null value.
        */
       public LinkedListNode()
       {
@@ -323,8 +333,8 @@ public class LinkedList<E> implements Iterable<E>
       }
 
       /**
-       *
-       * @param value
+       * Constructor LinkedListNode is used to assign a value given to each node.
+       * @param value Value is the value given to be stored.
        */
       public LinkedListNode(E value)
       {
@@ -332,10 +342,11 @@ public class LinkedList<E> implements Iterable<E>
       }
 
       /**
-       *
-       * @param value
-       * @param prev
-       * @param next
+       * Constructor LinkedlistNode is used to initialize the value, previous
+       * and next for each node.
+       * @param value Value is being assigned to _value.
+       * @param prev Prev is being assigned to _prev.
+       * @param next Next is being assigned to _next.
        */
       public LinkedListNode(E value, LinkedListNode prev, LinkedListNode next)
       {
@@ -345,8 +356,8 @@ public class LinkedList<E> implements Iterable<E>
       }
 
       /**
-       *
-       * @return
+       * getValue method returns the _value of node.
+       * @return Returning value of the node.
        */
       public E getValue()
       {
@@ -354,8 +365,8 @@ public class LinkedList<E> implements Iterable<E>
       }
 
       /**
-       *
-       * @return
+       * getPrevious returns previous node.
+       * @return Returns previous node.
        */
       public LinkedListNode getPrevious()
       {
@@ -363,8 +374,8 @@ public class LinkedList<E> implements Iterable<E>
       }
 
       /**
-       *
-       * @return
+       * getNext returns the next value in the list.
+       * @return returns next node.
        */
       public LinkedListNode getNext()
       {
@@ -372,8 +383,8 @@ public class LinkedList<E> implements Iterable<E>
       }
 
       /**
-       *
-       * @param value
+       * setValue is assigning _value to value.
+       * @param value Value is the given value for the node.
        */
       public void setValue(E value)
       {
@@ -381,7 +392,7 @@ public class LinkedList<E> implements Iterable<E>
       }
 
       /**
-       *
+       * setPrevious is assigning _previous to prev.
        * @param prev
        */
       public void setPrevious(LinkedListNode prev)
@@ -406,6 +417,7 @@ public class LinkedList<E> implements Iterable<E>
    {
       private LinkedListNode _cursor;
       private boolean _reverse;
+      private long _expectedModCount;
 
       /**
        *
@@ -414,6 +426,9 @@ public class LinkedList<E> implements Iterable<E>
       public LinkedListIterator(boolean reverse)
       {
          this._reverse = reverse;
+
+         // Get the current mod count.
+         this._expectedModCount = modcount;
       }
 
       /**
@@ -422,7 +437,11 @@ public class LinkedList<E> implements Iterable<E>
        */
       public boolean hasNext()
       {
-
+         if (_expectedModCount != modcount)
+         {
+         throw new ConcurrentModificationException("List has been modified");
+         }
+         return _cursor != null;
       }
 
       /**
@@ -431,6 +450,15 @@ public class LinkedList<E> implements Iterable<E>
        */
       public E next()
       {
+         if (_expectedModCount != modcount)
+         {
+            throw new ConcurrentModificationException("List has been modified");
+         }
+         if (!hasNext())
+         {
+            throw new NoSuchElementException();
+         }
+
 
       }
    }
