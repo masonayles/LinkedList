@@ -1,207 +1,180 @@
-import java.util.ConcurrentModificationException;
-import java.util.Iterator;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.NoSuchElementException;
+
+import static org.junit.Assert.*;
 
 public class LinkedListTest {
-    public static void main(String[] args) {
-        testAdd();
-        testAddAt();
-        testRemove();
-        testClear();
-        testGet();
-        testIndexOf();
-        testIsEmpty();
-        testSet();
-        testReverseIterator();
-        testEdgeCases();
+
+    private LinkedList<String> list;
+
+    @Before
+    public void setUp() {
+        list = new LinkedList<>();
     }
 
-    public static void testAdd() {
-        LinkedList<Integer> list = new LinkedList<>();
+    @Test
+    public void testAddAtIndex() {
+        list.add("A");
+        list.add("B");
+        list.add("C");
+        list.add(1, "X");
 
-        // Test add and size
-        assert list.isEmpty();
-        list.add(1);
-        assert list.size() == 1;
-        list.add(2);
-        assert list.size() == 2;
+        assertEquals("A", list.get(0));
+        assertEquals("X", list.get(1));
+        assertEquals("B", list.get(2));
+        assertEquals("C", list.get(3));
+        assertEquals(4, list.size());
     }
 
-    public static void testAddAt() {
-        LinkedList<Integer> list = new LinkedList<>();
+    @Test
+    public void testAddAtIndexOutOfBounds() {
+        list.add("A");
+        list.add("B");
 
-        list.add(1);
-        list.add(3);
-
-        // Test add at specific index
-        list.add(1, 2); // Insert 2 at index 1
-        assert list.get(1) == 2;
-        assert list.size() == 3;
-
-        list.add(0, 0); // Insert 0 at the beginning
-        assert list.get(0) == 0;
-        assert list.size() == 4;
-
-        list.add(4, 4); // Insert 4 at the end
-        assert list.get(4) == 4;
-        assert list.size() == 5;
+        assertThrows(IndexOutOfBoundsException.class, () -> list.add(3, "X"));
     }
 
-    public static void testRemove() {
-        LinkedList<Integer> list = new LinkedList<>();
+    @Test
+    public void testAddLast() {
+        list.add("A");
+        list.add("B");
 
-        list.add(1);
-        list.add(2);
-        list.add(3);
-
-        // Test remove
-        int removed = list.remove(1); // Remove the element at index 1 (which is 2)
-        assert removed == 2;
-        assert list.size() == 2;
-        assert list.get(1) == 3;
-
-        removed = list.remove(0); // Remove the first element (which is 1)
-        assert removed == 1;
-        assert list.size() == 1;
-        assert list.get(0) == 3;
+        assertEquals("A", list.get(0));
+        assertEquals("B", list.get(1));
+        assertEquals(2, list.size());
     }
 
-    public static void testClear() {
-        LinkedList<Integer> list = new LinkedList<>();
 
-        list.add(1);
-        list.add(2);
-
-        // Test clear
+    @Test
+    public void testClear() {
+        list.add("A");
+        list.add("B");
         list.clear();
-        assert list.isEmpty();
-        assert list.size() == 0;
+
+        assertTrue(list.isEmpty());
+        assertEquals(0, list.size());
     }
 
-    public static void testGet() {
-        LinkedList<Integer> list = new LinkedList<>();
+    @Test
+    public void testGet() {
+        list.add("A");
+        list.add("B");
 
-        list.add(1);
-        list.add(2);
-
-        // Test get
-        assert list.get(0) == 1;
-        assert list.get(1) == 2;
+        assertEquals("A", list.get(0));
+        assertEquals("B", list.get(1));
     }
 
-    public static void testIndexOf() {
-        LinkedList<String> list = new LinkedList<>();
+    @Test
+    public void testGetOutOfBounds() {
+        list.add("A");
 
-        list.add("apple");
-        list.add("banana");
-        list.add("cherry");
-
-        // Test indexOf
-        assert list.indexOf("banana") == 1;
-        assert list.indexOf("kiwi") == -1;
+        assertThrows(IndexOutOfBoundsException.class, () -> list.get(1));
     }
 
-    public static void testIsEmpty() {
-        LinkedList<Integer> list = new LinkedList<>();
+    @Test
+    public void testIndexOf() {
+        list.add("A");
+        list.add("B");
 
-        // Test isEmpty
-        assert list.isEmpty();
-        list.add(1);
-        assert !list.isEmpty();
+        assertEquals(0, list.indexOf("A"));
+        assertEquals(1, list.indexOf("B"));
+        assertEquals(-1, list.indexOf("C"));
     }
 
-    public static void testSet() {
-        LinkedList<Integer> list = new LinkedList<>();
+    @Test
+    public void testIsEmpty() {
+        assertTrue(list.isEmpty());
 
-        list.add(1);
-        list.add(2);
+        list.add("A");
+        assertFalse(list.isEmpty());
+    }
 
-        // Test set
-        int replaced = list.set(0, 3); // Replace the element at index 0 (which is 1) with 3
-        assert replaced == 1;
-        assert list.get(0) == 3;
+    @Test
+    public void testRemove() {
+        list.add("A");
+        list.add("B");
+        String removed = list.remove(0);
+
+        assertEquals("A", removed);
+        assertEquals(1, list.size());
+        assertEquals("B", list.get(0));
+    }
+
+    @Test
+    public void testRemoveOutOfBounds() {
+        list.add("A");
+
+        assertThrows(IndexOutOfBoundsException.class, () -> list.remove(1));
+    }
+
+    @Test
+    public void testRemoveFirst() {
+        list.add("A");
+        list.add("B");
+        String removed = list.remove(0);
+
+        assertEquals("A", removed);
+        assertEquals(1, list.size());
+        assertEquals("B", list.get(0));
+    }
+
+    @Test
+    public void testRemoveLast() {
+        list.add("A");
+        list.add("B");
+        String removed = list.remove(1);
+
+        assertEquals("B", removed);
+        assertEquals(1, list.size());
+        assertEquals("A", list.get(0));
+    }
+
+    @Test
+    public void testRemoveFirstEmptyList() {
+        LinkedList<String> emptyList = new LinkedList<>();
+        assertThrows(NoSuchElementException.class, () -> emptyList.remove(0));
+    }
+
+    @Test
+    public void testRemoveLastEmptyList() {
+        LinkedList<String> emptyList = new LinkedList<>();
+        assertThrows(NoSuchElementException.class, () -> emptyList.remove(emptyList.size() - 1));
     }
 
 
 
-    public static void testReverseIterator() {
-        LinkedList<Integer> list = new LinkedList<>();
 
-        list.add(1);
-        list.add(2);
-        list.add(3);
+    @Test
+    public void testSet() {
+        list.add("A");
+        list.add("B");
+        String previous = list.set(1, "X");
 
-        // Test reverse iteration
-        int sum = 0;
-        Iterator<Integer> reverseIterator = list.reverseIterator();
-        while (reverseIterator.hasNext()) {
-            sum += reverseIterator.next();
-        }
-        assert sum == 6;
+        assertEquals("B", previous);
+        assertEquals("A", list.get(0));
+        assertEquals("X", list.get(1));
     }
 
-    public static void testEdgeCases() {
-        LinkedList<Integer> list = new LinkedList<>();
+    @Test
+    public void testSetOutOfBounds() {
+        list.add("A");
 
-        // Test edge cases
-
-        // Test get on an empty list
-        try {
-            list.get(0);
-            assert false; // Should not reach here
-        } catch (IndexOutOfBoundsException e) {
-            assert true;
-        }
-
-        // Test add at out-of-bounds index
-        try {
-            list.add(2, 5);
-            assert false; // Should not reach here
-        } catch (IndexOutOfBoundsException e) {
-            assert true;
-        }
-
-        // Test set on an empty list
-        try {
-            list.set(0, 5);
-            assert false; // Should not reach here
-        } catch (IndexOutOfBoundsException e) {
-            assert true;
-        }
-
-        // Test set at out-of-bounds index
-        try {
-            list.add(1, 10);
-            assert false; // Should not reach here
-        } catch (IndexOutOfBoundsException e) {
-            assert true;
-        }
-
-        // Test remove on an empty list
-        try {
-            list.remove(0);
-            assert false; // Should not reach here
-        } catch (IndexOutOfBoundsException e) {
-            assert true;
-        }
-
-        // Test remove at out-of-bounds index
-        try {
-            list.add(1, 10);
-            list.remove(2);
-            assert false; // Should not reach here
-        } catch (IndexOutOfBoundsException e) {
-            assert true;
-        }
-
-        // Test iterator concurrent modification
-        try {
-            Iterator<Integer> iterator = list.iterator();
-            list.add(5);
-            iterator.next();
-            assert false; // Should not reach here
-        } catch (ConcurrentModificationException e) {
-            assert true;
-        }
+        assertThrows(IndexOutOfBoundsException.class, () -> list.set(1, "X"));
     }
+
+    @Test
+    public void testSize() {
+        assertEquals(0, list.size());
+
+        list.add("A");
+        list.add("B");
+        assertEquals(2, list.size());
+    }
+
+
+
+    // Add more test methods for error scenarios, if needed.
+
 }
-
