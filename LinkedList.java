@@ -45,6 +45,10 @@ public class LinkedList<E> implements Iterable<E>
          addLast(element);
       }
       // If the condition above is false we need to insert the element at a specified position.
+      else if (index ==0)
+      {
+         addFirst(element);
+      }
       else
       {
          LinkedListNode currentNode = _head;
@@ -80,8 +84,6 @@ public class LinkedList<E> implements Iterable<E>
    public boolean add(E element)
    {
       addLast(element);
-      _modcount++;
-      _size++;
       return true;
    }
 
@@ -162,7 +164,7 @@ public class LinkedList<E> implements Iterable<E>
    }
 
    /**
-    * Removes the element at the specified position inthis list.
+    * Removes the element at the specified position in this list.
     * Shifts any subsequent elements to the left. Returns the element
     * that was removed from the list.
     * @param index index is the index of the element to be removed.
@@ -213,13 +215,13 @@ public class LinkedList<E> implements Iterable<E>
       if (index == _size - 1) {
          // Special case: Set the last element (index == _size - 1)
          if (_size == 1) {
-            // If there's only one element in the list, update both head and tail.
+            // If theres only one element in the list, update both head and tail.
             E removedElement = _head.getValue();
             _head.setValue(element);
             _tail.setValue(element);
             return removedElement;
          } else {
-            // If there's more than one element, update the tail.
+            // If theres more than one element, update the tail.
             E removedElement = _tail.getValue();
             _tail.setValue(element);
             return removedElement;
