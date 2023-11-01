@@ -544,6 +544,11 @@ public class LinkedList<E> implements Iterable<E>
          {
             _cursor = _cursor.getNext();
          }
+
+         if (_expectedModCount != _modcount)
+         {
+            throw new ConcurrentModificationException("List has been modified");
+         }
          return element;
       }
    }

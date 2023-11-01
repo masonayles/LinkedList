@@ -935,14 +935,6 @@ public class LinkedListTester {
 
         }
     }
-
-
-
-
-
-
-
-
     public void test_LinkefdList_removeFirst_emptyList() {
         try {
             LinkedList<String> list = new LinkedList<>();
